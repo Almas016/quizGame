@@ -3,7 +3,6 @@ package pkg
 import (
 	"encoding/csv"
 	"errors"
-	"flag"
 	"fmt"
 	"math/rand"
 	"os"
@@ -13,18 +12,16 @@ import (
 
 type myCSV [][]string
 
-func LevelOne() {
-	csvLines := ReadCSV()
+func LevelOne(fileName string) {
+	csvLines := ReadCSV(fileName)
 
 	fmt.Printf("%d correct answers out of %d\n", correctAnswer(&csvLines), len(csvLines))
 }
 
-func LevelTwo() {
-	csvLines := ReadCSV()
-	timer := flag.Int("time", 30, "time allocated for the test")
-	flag.Parse()
+func LevelTwo(fileName string, timer int) {
+	csvLines := ReadCSV(fileName)
 
-	if correct, err := correctAnswer2(&csvLines, *timer); err != nil {
+	if correct, err := correctAnswer2(&csvLines, timer); err != nil {
 		fmt.Println(error.Error(err))
 	} else {
 		fmt.Printf("%d correct answers out of %d\n", correct, len(csvLines))
@@ -81,10 +78,8 @@ func ShuffleFile(s myCSV) myCSV {
 	return s
 }
 
-func ReadCSV() myCSV {
-	fileName := flag.String("fn", "test1", "file name")
-	flag.Parse()
-	csvFile, err := os.Open(*fileName + ".csv")
+func ReadCSV(fileName string) myCSV {
+	csvFile, err := os.Open(fileName + ".csv")
 	if err != nil {
 		fmt.Println(error.Error(err))
 	}
