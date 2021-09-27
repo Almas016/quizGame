@@ -2,11 +2,9 @@ package pkg
 
 import (
 	"encoding/csv"
-	"errors"
 	"fmt"
 	"math/rand"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -21,32 +19,24 @@ func LevelOne(fileName string) {
 func LevelTwo(fileName string, timer int) {
 	csvLines := ReadCSV(fileName)
 
-	if correct, err := correctAnswer2(&csvLines, timer); err != nil {
-		fmt.Println(error.Error(err))
-	} else {
-		fmt.Printf("%d correct answers out of %d\n", correct, len(csvLines))
-	}
-
+	correct := correctAnswer2(&csvLines, timer)
+	fmt.Printf("%d correct answers out of %d\n", correct, len(csvLines))
 }
 
 func correctAnswer(s *myCSV) int {
 	correct := 0
-	var answer int
+	var answer string
 	for _, v := range *s {
 		fmt.Printf("%v, your answer?\n", v[0])
 		fmt.Scanln(&answer)
-		trueAnswer, err := strconv.Atoi(v[1])
-		if err != nil {
-			fmt.Println(error.Error(err))
-		}
-		if answer == trueAnswer {
+		if answer == v[1] {
 			correct++
 		}
 	}
 	return correct
 }
 
-func correctAnswer2(s *myCSV, n int) (int, error) {
+func correctAnswer2(s *myCSV, n int) int {
 	correct := 0
 	timer := time.NewTimer(time.Duration(n) * time.Second)
 	for _, v := range *s {
@@ -61,7 +51,8 @@ func correctAnswer2(s *myCSV, n int) (int, error) {
 
 		select {
 		case <-timer.C:
-			return correct, errors.New("Timed out")
+			fmt.Println("Timed out")
+			return correct
 		case answer := <-answerCh:
 			if answer == v[1] {
 				correct++
@@ -69,7 +60,7 @@ func correctAnswer2(s *myCSV, n int) (int, error) {
 		}
 	}
 
-	return correct, nil
+	return correct
 }
 
 func ShuffleFile(s myCSV) myCSV {
@@ -88,6 +79,13 @@ func ReadCSV(fileName string) myCSV {
 	csvLines, err := csv.NewReader(csvFile).ReadAll()
 	if err != nil {
 		fmt.Println(error.Error(err))
+	}
+
+	for _, v := range csvLines {
+		if v[0] == "" {
+			fmt.Println("Your file is missing a question(s)")
+			os.Exit(1)
+		}
 	}
 
 	return ShuffleFile(csvLines)
